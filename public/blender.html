@@ -335,7 +335,7 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
 <div id="stage">
   <div id="world">
     <div id="orb"></div>
-    <h1 id="headline"><span class="inner"><span style="--i:0">Мой</span> <span style="--i:1">3D</span> <span style="--i:2">рай</span> <span style="--i:3">для</span> <span style="--i:4">глаз</span></span></h1>
+    <h1 id="headline"><span class="inner"><span style="--i:0">3D<span style="--i:4">Портфолио</span></span></h1>
   </div>
 </div>
 <div class="vig"></div>
@@ -395,13 +395,18 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
      Вертикальная карточка в сфере: добавьте tall:true
      Файлы кладите в public/blender/ и указывайте путь /blender/имя.ext
      Если работ меньше 21, они автоматически повторяются по сфере (MIN_SLOTS). */
-  var ITEMS=[
+
 var ITEMS=[
-  {type:'video', src:'/blender/anim1.mp4', poster:'', title:'Анимация 1', place:'Blender · анимация', note:'Описание'},
-  {type:'video', src:'/blender/anim2.mp4', poster:'', title:'Анимация 2', place:'Blender · анимация', note:'Описание'},
-  {type:'photo', src:'/blender/render1.jpg', title:'Рендер 1', place:'Blender · рендер', note:'Описание'}
+  {type:'photo', src:'/blender/render1.jpg', title:'Рендер 01', place:'Blender · рендер', note:'Ночная заправка'},
+  {type:'video', src:'/blender/anim1.MOV', title:'Анимация 01', place:'Blender · анимация', note:'1 Анимацция проекта'},
+  {type:'video', src:'/blender/anim2.MOV', title:'Анимация 02', place:'Blender · анимация', note:'2 Анимацция проекта'},
+  {type:'video', src:'/blender/anim3.MOV', title:'Анимация 03', place:'Blender · анимация', note:'3 Анимацция проекта'},
+  {type:'video', src:'/blender/anim4.MOV', title:'Анимация 04', place:'Blender · анимация', note:'Заброшенная дорога'},
+  {type:'video', src:'/blender/anim5.MOV', title:'Анимация 05', place:'Blender · анимация', note:'Гараж'},
+  {type:'video', src:'/blender/anim6.MP4', title:'Анимация 06', place:'Blender · анимация', note:'Рабочее место'},
+  {type:'photo', src:'/blender/render2.jpg', title:'Рендер 02', place:'Blender · рендер', note:'Комната'}
 ];
-  ];
+  
   var MIN_SLOTS=21;
   var N=Math.max(MIN_SLOTS,ITEMS.length);
   var doc=document.documentElement, body=document.body;
