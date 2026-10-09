@@ -546,7 +546,7 @@ body {
   border-radius: 999px;
   color: #000;
   font-family: 'Unbounded', system-ui, sans-serif;
-  font-size: clamp(18px, 2.3vw, 30px);
+  font-size: clamp(14px, 1.7vw, 24px);
   font-weight: 500;
   line-height: 1;
   text-align: center;
