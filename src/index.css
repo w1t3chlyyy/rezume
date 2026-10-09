@@ -432,15 +432,15 @@ body {
 .experience-heading {
   position: absolute;
   z-index: 2;
-  top: 20%;
+  top: 24%;
   left: 50%;
   margin: 0;
   color: #fff;
   font-family: 'Unbounded', system-ui, sans-serif;
-  font-size: clamp(480px, 72vw, 1280px);
+  font-size: 54vw;
   font-weight: 500;
-  letter-spacing: -0.08em;
-  line-height: 1;
+  letter-spacing: -0.09em;
+  line-height: 0.75;
   mix-blend-mode: overlay;
   transform: translateX(-50%);
   white-space: nowrap;
