@@ -407,9 +407,9 @@ body {
 .exp-heading {
   position: absolute;
   z-index: 2;
-  top: 34%;
-  left: 9%;
-  width: 82%;
+  top: 42%;
+  left: 15%;
+  width: 70%;
   height: auto;
   transform: translateY(-50%);
   mix-blend-mode: overlay;
