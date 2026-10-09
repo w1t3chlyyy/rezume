@@ -36,7 +36,6 @@ body.locked{overflow:hidden;height:100vh;height:100dvh}
 img{display:block;max-width:100%}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 a{-webkit-tap-highlight-color:transparent}
-@media (hover:hover) and (pointer:fine){body,a,button,#grid figure,.card{cursor:none}}
 
 /* layers */
 #scrolltrack{height:116vh;pointer-events:none}
@@ -245,15 +244,6 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
 .tag{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:rgba(244,242,239,.38);opacity:0;animation:riseIn .9s ease .7s forwards}
 @keyframes riseIn{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
 
-/* cursor */
-#dot{
-  position:fixed;top:0;left:0;z-index:300;width:19px;height:19px;margin:-9.5px 0 0 -9.5px;border-radius:50%;
-  background:rgba(214,212,209,.9);mix-blend-mode:difference;border:1px solid transparent;pointer-events:none;
-  transition:width .35s ease,height .35s ease,margin .35s ease,background .35s ease,border-color .35s ease;
-}
-#dot.wide{width:52px;height:52px;margin:-26px 0 0 -26px;background:rgba(244,242,239,.14);border-color:rgba(244,242,239,.75)}
-@media (hover:none),(pointer:coarse){#dot{display:none}}
-
 /* responsive */
 @media (max-width:900px){
   .bio.chrome{max-width:min(420px,calc(100vw - var(--pad) * 2 - var(--safe-left) - var(--safe-right)))}
@@ -324,6 +314,18 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
 .close:hover{background:#333}
 #grid figure{border-radius:16px}
 @media (max-width:640px){.back{padding:10px 14px;font-size:12px}.menu-label{display:none}.close{top:12px;right:12px}}
+
+/* video / play badge */
+#litVid{display:none;width:100%;height:100%;object-fit:contain;background:#000;border-radius:16px}
+.shot.isvideo #litVid{display:block}
+.shot.isvideo #litImg{display:none}
+.close{z-index:2}
+.play{position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.75);background:rgba(0,0,0,.4);pointer-events:none;z-index:2}
+.play::after{content:"";position:absolute;top:50%;left:50%;transform:translate(-35%,-50%);border-style:solid;border-width:5px 0 5px 8px;border-color:transparent transparent transparent #fff}
+/* обычный курсор */
+#stage{cursor:grab}
+#stage:active{cursor:grabbing}
+.card,#grid figure,button,a{cursor:pointer}
 </style>
 </head>
 <body class="locked">
@@ -361,6 +363,7 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
   <div class="plate" id="plate">
     <div class="shot">
       <img id="litImg" alt="">
+      <video id="litVid" playsinline controls loop></video>
       <button class="close" data-close>Закрыть</button>
     </div>
     <div class="meta">
@@ -377,42 +380,30 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
   <button class="skip" id="skip">Пропустить</button>
 </div>
 
-<div id="dot"></div>
-
 <script>
 (function(){
   var CDN='https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/';
-  var AVATAR='hf_20260922_194417_a455843c-d8db-461c-8ef6-74a325d2472c';
-  var SHOTS=[
-    ['hf_20260922_194349_26ffdbfd-ac5e-49e9-a07d-c06d3f7cb4cb','Before the Dust Settled','South Africa · Limpopo Province','Wildlife photography is rarely about pressing the shutter. Most of the work happens earlier — waiting, staying still, and accepting that nature decides if the frame exists. This encounter lasted less than a minute.'],
-    ['hf_20260922_194350_5546ea3d-6336-42c7-a59f-06165c5802be','The Long Walk Home','Kenya · Maasai Mara','A matriarch leading her herd across open grass at the end of the day. I stayed low and let them close the distance on their own terms.'],
-    ['hf_20260922_194349_b4533691-cb49-41d4-b56c-51f0fdcbe250','Something Understood','Botswana · Okavango Delta','He held the look for about four seconds. Long enough to be certain neither of us intended to move first.'],
-    ['hf_20260922_194349_e588abd3-1bfa-4918-894f-05632cc51ccc','Nine Hours of Nothing','Finland · Lapland','A full day in a hide for a single turn of the head. That ratio is normal and I have stopped resenting it.'],
-    ['hf_20260922_194350_28d92c80-de66-41cb-911e-b3b44aebe1f5','Borrowed Trust','Scotland · Cairngorms','She had learned the shape of a person and decided it was uninteresting. That indifference is the rarest thing in this work.'],
-    ['hf_20260922_194349_04e89718-4214-4aff-bac5-490462bbfe2f','Small Weather','Costa Rica · Osa Peninsula','Rain had just stopped. Everything on that branch was the size of a thumbnail and lit like a stage.'],
-    ['hf_20260922_194417_2c031e22-2fad-4c81-a544-83cd6bba1c33','Against the Weather','Alaska · Chilkat Valley','Shot at a thousandth of a second into a rising storm. The light lasted eleven minutes.'],
-    ['hf_20260922_194349_a39c3226-7848-4b15-b840-98ad8aec467b','The Pale Edge','India · Bandhavgarh','Almost entirely hidden. I only found the frame because the foliage stopped moving in the wrong place.'],
-    ['hf_20260922_194417_555e4d90-f35f-4a1a-8c75-def1e8b71988','Perfect Arithmetic','Indonesia · Raja Ampat','Coiled with a precision that looks designed. Nothing about it is — it is just the cheapest way to hold heat.'],
-    ['hf_20260922_194417_e525a243-03c8-454b-83b4-60f541baf70a','Shallow Water','French Polynesia · Fakarava','Three metres down on a single breath. It passed close enough that I stopped composing and simply held the camera still.'],
-    ['hf_20260922_194349_ec830e6f-b8e6-4569-8540-ee7f33902c53','Two of Nine','India · Ranthambore','Siblings resting out the afternoon heat. The second one never opened its eyes.'],
-    ['hf_20260922_194417_35a9af5f-bd07-45a7-bb73-08b47d19d530','Low Ground','Nepal · Chitwan','Flat on the ground at her eye level, which is the only honest angle for an animal that hunts from there.'],
-    ['hf_20260922_194416_30e307a9-1265-45c3-a1a0-5c6fa5bb9f8d','Everything at Once','Iceland · Southern Coast','Free horses on a black beach at dusk. I panned and accepted whatever the frame gave back.'],
-    ['hf_20260922_194417_ff5cb9f8-8eed-4bfb-bb08-11256da92eae','White on White','Canada · Ellesmere Island','Snow removes every reference for exposure. The only reliable meter left is the eyes.'],
-    ['hf_20260922_194418_1d9bff4a-4971-4944-9e49-d72e755ceeb0','Census','Namibia · Etosha','Two of roughly sixteen thousand left. The number is the reason the frame exists.'],
-    ['hf_20260922_194349_75e53821-0807-4ebc-992d-34bae0ec2ce6','The Whole Field','France · Provence','Four millimetres of animal. At this magnification a breath of wind is an earthquake.'],
-    ['hf_20260922_194417_5a227847-3796-4438-805d-7e66e9538205','First Season','Germany · Bavarian Forest','Days old and already still enough to disappear. Stillness is the first thing anything here learns.'],
-    ['hf_20260922_194350_b49aa67e-0401-4029-af4f-f6ac3ee83398','Listening Posture','Tanzania · Serengeti','Ears forward, weight on the back legs. She heard something I never did.'],
-    ['hf_20260922_194349_89b82779-3a46-4c55-b7c5-f4a0fd955874','A Line of Red','Spain · Fuente de Piedra','Underexposed by two stops until only the shape survived.'],
-    ['hf_20260922_194416_47e18c62-253a-42e1-97a9-9e5f6a6b8d59','Left Behind','Studio · Reykjavík','Found beneath a roost at first light. The only frame in this archive an animal agreed to in advance.',true],
-    ['hf_20260922_194417_a455843c-d8db-461c-8ef6-74a325d2472c','The Other Side','Uganda · Kibale Forest','Taken by a colleague between two long waits. Proof, mostly, that someone is holding the camera.']
+  var thumb=function(id){return CDN+id+'_min.webp'};
+  var still=function(id){return {type:'photo',thumb:thumb(id),src:CDN+id+'.png'}};
+  var NOTE='Здесь будет описание проекта: идея, инструменты и результат.';
+
+  /* ================= ВАШИ РАБОТЫ =================
+     Видео: {type:'video', src:'/blender/clip.mp4', poster:'/blender/clip.jpg', title:'', place:'', note:''}
+       poster — один кадр для сферы и сетки (по клику открывается видео).
+       Если poster не указан, кадр берётся из самого видео автоматически.
+     Фото:  {type:'photo', src:'/blender/pic.jpg', thumb:'/blender/pic-small.jpg' (необязательно), title:'', place:'', note:''}
+     Вертикальная карточка в сфере: добавьте tall:true
+     Файлы кладите в public/blender/ и указывайте путь /blender/имя.ext
+     Если работ меньше 21, они автоматически повторяются по сфере (MIN_SLOTS). */
+  var ITEMS=[
+var ITEMS=[
+  {type:'video', src:'/blender/anim1.mp4', poster:'', title:'Анимация 1', place:'Blender · анимация', note:'Описание'},
+  {type:'video', src:'/blender/anim2.mp4', poster:'', title:'Анимация 2', place:'Blender · анимация', note:'Описание'},
+  {type:'photo', src:'/blender/render1.jpg', title:'Рендер 1', place:'Blender · рендер', note:'Описание'}
+];
   ];
-  /* плейсхолдеры: замените на свои 3D-работы (id картинки, название, место, описание) */
-  SHOTS.forEach(function(s,i){
-    s[1]='3D работа '+('0'+(i+1)).slice(-2);
-    s[2]='Blender · 3D';
-    s[3]='Здесь будет описание проекта: идея, инструменты и результат.';
-  });
-  var N=SHOTS.length;
+  var MIN_SLOTS=21;
+  var N=Math.max(MIN_SLOTS,ITEMS.length);
   var doc=document.documentElement, body=document.body;
   var $=function(id){return document.getElementById(id)};
   var stage=$('stage'), world=$('world'), orb=$('orb'), headline=$('headline');
@@ -425,25 +416,27 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
   var cards=[], gridFigs=[];
   var GA=Math.PI*(3-Math.sqrt(5));
   var rows=$('rows');
-  SHOTS.forEach(function(s,i){
+  var PLAY='<span class="play"></span>';
+  for(var i=0;i<N;i++){
+    var k0=i%ITEMS.length, it0=ITEMS[k0];
     var y=1-(i/(N-1))*2, rad=Math.sqrt(Math.max(0,1-y*y)), th=i*GA;
     var x=Math.cos(th)*rad, z=Math.sin(th)*rad;
     var u={x:x,y:y,z:z,lat:Math.asin(y)*180/Math.PI,lon:Math.atan2(x,z)*180/Math.PI};
     var el=document.createElement('div');
-    el.className='card'+(s[5]?' tall':'');
+    el.className='card'+(it0.tall?' tall':'');
     el.dataset.idx=i;
-    var fig=document.createElement('figure');
-    var img=document.createElement('img');
-    img.alt=s[1]; img.decoding='async';
-    fig.appendChild(img); el.appendChild(fig); orb.appendChild(el);
-    cards.push({el:el,img:img,u:u,op:null,d:null,url:thumb(s[0])});
-
+    el.innerHTML='<figure><img alt="" decoding="async">'+(it0.type==='video'?PLAY:'')+'</figure>';
+    orb.appendChild(el);
+    cards.push({el:el,img:el.querySelector('img'),u:u,op:null,d:null,item:k0});
+  }
+  ITEMS.forEach(function(it,k){
     var gf=document.createElement('figure');
-    gf.dataset.idx=i;
-    var gi=document.createElement('img'); gi.alt=s[1]; gi.loading='lazy';
-    var gc=document.createElement('figcaption'); gc.textContent=s[1];
-    gf.appendChild(gi); gf.appendChild(gc); rows.appendChild(gf);
-    gridFigs.push({el:gf,img:gi});
+    gf.dataset.idx=k;
+    gf.innerHTML='<img alt="" loading="lazy"><figcaption></figcaption>'+(it.type==='video'?PLAY:'');
+    gf.querySelector('img').alt=it.title||'';
+    gf.querySelector('figcaption').textContent=it.title||'';
+    rows.appendChild(gf);
+    gridFigs.push({el:gf,img:gf.querySelector('img')});
   });
 
   /* ---------- layout ---------- */
@@ -483,8 +476,8 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
       im.onload=function(){
         try{
           if(im.naturalWidth<=max){res(url);return}
-          var s=max/im.naturalWidth, c=document.createElement('canvas');
-          c.width=max; c.height=Math.round(im.naturalHeight*s);
+          var sc=max/im.naturalWidth, c=document.createElement('canvas');
+          c.width=max; c.height=Math.round(im.naturalHeight*sc);
           c.getContext('2d').drawImage(im,0,0,c.width,c.height);
           c.toBlob(function(b){res(b?URL.createObjectURL(b):url)},'image/webp',.88);
         }catch(e){res(url)}
@@ -493,20 +486,40 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
       im.src=url;
     });
   }
-
+  /* кадр из видео, если poster не указан */
+  function frameOf(url,max){
+    return new Promise(function(res){
+      var v=document.createElement('video'), done=false;
+      v.crossOrigin='anonymous'; v.muted=true; v.playsInline=true; v.preload='auto';
+      function fin(r){if(done)return;done=true;try{v.removeAttribute('src');v.load()}catch(e){}res(r)}
+      v.addEventListener('loadeddata',function(){
+        try{v.currentTime=Math.min(.1,(v.duration||1)/2)}catch(e){fin(null)}
+      });
+      v.addEventListener('seeked',function(){
+        try{
+          var sc=Math.min(1,max/v.videoWidth), c=document.createElement('canvas');
+          c.width=Math.round(v.videoWidth*sc); c.height=Math.round(v.videoHeight*sc);
+          c.getContext('2d').drawImage(v,0,0,c.width,c.height);
+          c.toBlob(function(b){fin(b?URL.createObjectURL(b):null)},'image/webp',.88);
+        }catch(e){fin(null)}
+      });
+      v.addEventListener('error',function(){fin(null)});
+      setTimeout(function(){fin(null)},12000);
+      v.src=url;
+    });
+  }
+  var PLACEHOLDER='data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2"><rect width="3" height="2" fill="#0d0d0d"/></svg>');
   function tick(){}
-
   var max=decodeMax();
-  SHOTS.forEach(function(s,i){
-    prep(thumb(s[0]),max).then(function(u){
-      cards[i].url=u;
-      cards[i].img.src=u;
-      cards[i].img.classList.add('in');
-      gridFigs[i].img.src=u;
-      tick();
+  ITEMS.forEach(function(it,k){
+    var cover=it.type==='video'?it.poster:(it.thumb||it.src);
+    var pr=cover?prep(cover,max):frameOf(it.src,max).then(function(u){return u||PLACEHOLDER});
+    pr.then(function(u){
+      it.cover=u;
+      cards.forEach(function(c){if(c.item===k){c.img.src=u;c.img.classList.add('in')}});
+      gridFigs[k].img.src=u;
     });
   });
-
   var splashUp=false;
 
   /* ---------- intro film ---------- */
@@ -653,7 +666,7 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
     active=false; dragging=false;
     try{stage.releasePointerCapture(pid)}catch(err){}
     var slop=(ptype==='touch'||e.pointerType==='pen')?14:6;
-    if(e.type==='pointerup'&&moved<=slop&&downCard>=0){velX=velY=0;openShot(downCard)}
+    if(e.type==='pointerup'&&moved<=slop&&downCard>=0){velX=velY=0;openSlot(downCard)}
   }
   stage.addEventListener('pointerup',endDrag);
   stage.addEventListener('pointercancel',function(e){
@@ -668,32 +681,44 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
   }
   gridBtn.addEventListener('click',function(){toggleGrid()});
   rows.addEventListener('click',function(e){
-    var f=e.target.closest('figure'); if(f)openShot(+f.dataset.idx);
+    var f=e.target.closest('figure'); if(f)openItem(+f.dataset.idx,f,-1,true);
   });
 
-  /* ---------- lightbox ---------- */
-  var lit=$('lit'), plate=$('plate'), litImg=$('litImg'), token=0, srcEl=null;
-  function openShot(i){
-    var s=SHOTS[i], c=cards[i];
-    var fromGrid=body.classList.contains('gridview');
-    srcEl=fromGrid?gridFigs[i].el:c.el;
-    var myToken=++token;
-    litImg.src=c.url; litImg.alt=s[1];
-    $('litTitle').textContent=s[1];
-    $('litWhere').textContent=s[2];
-    $('litNote').textContent=s[3];
-    var im=new Image();
-    im.onload=function(){if(myToken===token)litImg.src=im.src};
-    im.src=full(s[0]);
-    focused=i;
+  /* ---------- lightbox (фото или видео) ---------- */
+  var lit=$('lit'), plate=$('plate'), litImg=$('litImg'), litVid=$('litVid'), shotEl=document.querySelector('.shot'), token=0, cur=null;
+  function openSlot(slot){openItem(cards[slot].item,cards[slot].el,slot,false)}
+  function openItem(k,srcEl,slot,fromGrid){
+    var it=ITEMS[k], myToken=++token, isV=it.type==='video';
+    cur={k:k,slot:slot,fromGrid:fromGrid};
+    shotEl.classList.toggle('isvideo',isV);
+    $('litTitle').textContent=it.title||'';
+    $('litWhere').textContent=it.place||'';
+    $('litNote').textContent=it.note||'';
+    if(isV){
+      litImg.removeAttribute('src');
+      litVid.poster=it.cover||'';
+      litVid.src=it.src;
+      litVid.muted=false;
+      var pr=litVid.play();
+      if(pr&&pr.catch)pr.catch(function(){
+        litVid.muted=true;
+        var q=litVid.play(); if(q&&q.catch)q.catch(function(){});
+      });
+    }else{
+      litImg.src=it.cover||''; litImg.alt=it.title||'';
+      var im=new Image();
+      im.onload=function(){if(myToken===token)litImg.src=im.src};
+      im.src=it.src;
+    }
+    focused=slot;
     doc.style.overflow='hidden';
     var r=srcEl.getBoundingClientRect();
     plate.style.transition='none';
     plate.style.transform='none'; plate.style.opacity='1';
-    var pr=plate.getBoundingClientRect();
-    var sc=Math.max(.04,r.width/pr.width);
-    var dx=(r.left+r.width/2)-(pr.left+pr.width/2);
-    var dy=(r.top+r.height/2)-(pr.top+pr.height/2);
+    var pr2=plate.getBoundingClientRect();
+    var sc=Math.max(.04,r.width/pr2.width);
+    var dx=(r.left+r.width/2)-(pr2.left+pr2.width/2);
+    var dy=(r.top+r.height/2)-(pr2.top+pr2.height/2);
     plate.style.transform='translate('+dx+'px,'+dy+'px) scale('+sc+')';
     plate.style.opacity='0';
     void plate.offsetWidth;
@@ -701,11 +726,11 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
     body.classList.add('lit');
   }
   function closeShot(){
-    if(!shotOpen())return;
+    if(!shotOpen()||!cur)return;
     token++;
-    var i=focused; focused=-1;
-    var fromGrid=body.classList.contains('gridview');
-    var el=fromGrid?gridFigs[i].el:cards[i].el;
+    focused=-1;
+    try{litVid.pause()}catch(e){}
+    var el=cur.fromGrid?gridFigs[cur.k].el:cards[cur.slot].el;
     var r=el.getBoundingClientRect();
     var pr=plate.getBoundingClientRect();
     var sc=Math.max(.04,r.width/pr.width);
@@ -716,6 +741,7 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
     plate.style.opacity='0';
     setTimeout(function(){
       if(shotOpen())return;
+      litVid.removeAttribute('src'); litVid.load();
       plate.style.transition='none';
       plate.style.transform=''; plate.style.opacity='';
       void plate.offsetWidth;
@@ -739,21 +765,6 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
     else if(body.classList.contains('gridview'))toggleGrid(false);
   });
 
-  /* ---------- cursor ---------- */
-  var dot=$('dot');
-  if(matchMedia('(hover:hover) and (pointer:fine)').matches){
-    var mx=-100,my=-100,cx=-100,cy=-100;
-    addEventListener('pointermove',function(e){
-      mx=e.clientX;my=e.clientY;
-      var t=e.target.closest&&e.target.closest('.card, a, button, #grid figure');
-      dot.classList.toggle('wide',!!t);
-    });
-    (function loop(){
-      cx+=(mx-cx)*.2; cy+=(my-cy)*.2;
-      dot.style.transform='translate3d('+cx+'px,'+cy+'px,0)';
-      requestAnimationFrame(loop);
-    })();
-  }
 })();
 </script>
 </body>
