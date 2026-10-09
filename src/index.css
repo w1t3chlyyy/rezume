@@ -393,12 +393,13 @@ body {
 
 .exp-video {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
   z-index: 0;
   width: 100%;
-  height: 100%;
+  height: 80%;
   object-fit: contain;
-  object-position: center;
+  object-position: center top;
   pointer-events: none;
 }
 
@@ -406,12 +407,12 @@ body {
 .exp-heading {
   position: absolute;
   z-index: 2;
-  top: 50%;
-  left: 0;
-  width: 100%;
+  top: 34%;
+  left: 9%;
+  width: 82%;
   height: auto;
   transform: translateY(-50%);
-  mix-blend-mode: overlay; /* замените на normal, если нужен сплошной белый */
+  mix-blend-mode: overlay;
   pointer-events: none;
   overflow: visible;
 }
@@ -426,7 +427,7 @@ body {
 .exp-topline {
   position: absolute;
   z-index: 5;
-  top: 12%;
+  top: 8%;
   right: 2.5%;
   left: 3.3%;
   display: flex;
@@ -439,7 +440,7 @@ body {
   margin: 0;
   color: #fff;
   font-family: 'Unbounded', system-ui, sans-serif;
-  font-size: clamp(12px, 1.25vw, 15px);
+  font-size: clamp(16px, 1.9vw, 28px);
   font-weight: 500;
   letter-spacing: -0.02em;
   line-height: 1.2;
