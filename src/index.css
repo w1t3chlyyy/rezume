@@ -578,9 +578,9 @@ body {
   margin: 0;
   color: #000;
   font-family: 'Unbounded', system-ui, sans-serif;
-  font-size: clamp(42px, 8.7vw, 112px);
+  font-size: clamp(56px, 10vw, 140px);
   font-weight: 400;
-  letter-spacing: -0.08em;
+  letter-spacing: -0.055em;
   line-height: 0.82;
   transform: translateX(-50%);
   white-space: nowrap;
