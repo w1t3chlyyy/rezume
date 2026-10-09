@@ -397,12 +397,14 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
      Файлы кладите в public/blender/ и указывайте путь /blender/имя.ext
      Если работ меньше 21, они автоматически повторяются по сфере (MIN_SLOTS). */
   var ITEMS=[
-    {type:'video',src:CDN+'hf_20260418_063509_7d167302-4fd4-480b-8260-18ab572333d4.mp4',title:'Проект 01',place:'Blender · 3D анимация',note:NOTE},
-    {type:'video',src:CDN+'hf_20260702_135039_b04d00db-6ee2-4e2a-a7f5-b2dfd3d24fd2.mp4',title:'Проект 02',place:'Blender · 3D анимация',note:NOTE},
-    Object.assign(still('hf_20260922_194349_26ffdbfd-ac5e-49e9-a07d-c06d3f7cb4cb'),{title:'Проект 03',place:'Blender · рендер',note:NOTE}),
-    Object.assign(still('hf_20260922_194350_5546ea3d-6336-42c7-a59f-06165c5802be'),{title:'Проект 04',place:'Blender · рендер',note:NOTE}),
-    Object.assign(still('hf_20260922_194349_b4533691-cb49-41d4-b56c-51f0fdcbe250'),{title:'Проект 05',place:'Blender · рендер',note:NOTE}),
-    Object.assign(still('hf_20260922_194416_47e18c62-253a-42e1-97a9-9e5f6a6b8d59'),{title:'Проект 06',place:'Blender · рендер',note:NOTE,tall:true})
+    {type:'photo', src:'/blender/render1.jpg', title:'Рендер 01', place:'Blender · рендер', note:'Ночная заправка'},
+    {type:'video', src:'/blender/anim1.MOV', title:'Анимация 01', place:'Blender · анимация', note:'1 Анимация'},
+    {type:'video', src:'/blender/anim2.MOV', title:'Анимация 02', place:'Blender · анимация', note:'2 Анимация'},
+    {type:'video', src:'/blender/anim3.MOV', title:'Анимация 03', place:'Blender · анимация', note:'3 Анимация'},
+    {type:'video', src:'/blender/anim4.MOV', title:'Анимация 04', place:'Blender · анимация', note:'Заброшенная дорога'},
+    {type:'video', src:'/blender/anim5.MOV', title:'Анимация 05', place:'Blender · анимация', note:'Гараж'},
+    {type:'video', src:'/blender/anim6.MP4', title:'Анимация 06', place:'Blender · анимация', note:'Рабочее место'},
+    {type:'photo', src:'/blender/render2.jpg', title:'Рендер 02', place:'Blender · рендер', note:'Комната'}
   ];
   var MIN_SLOTS=21;
   var N=Math.max(MIN_SLOTS,ITEMS.length);
