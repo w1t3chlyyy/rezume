@@ -391,10 +391,10 @@ body {
 .experience-background {
   position: absolute;
   z-index: 0;
-  top: 7%;
-  left: 6%;
-  width: 88%;
-  height: 68%;
+  top: 5%;
+  left: 4%;
+  width: 92%;
+  height: 72%;
   border-radius: 2px;
   object-fit: contain;
   object-position: center top;
@@ -437,7 +437,7 @@ body {
   margin: 0;
   color: #fff;
   font-family: 'Unbounded', system-ui, sans-serif;
-  font-size: clamp(120px, 18vw, 320px);
+  font-size: clamp(240px, 36vw, 640px);
   font-weight: 500;
   letter-spacing: -0.08em;
   line-height: 1;
