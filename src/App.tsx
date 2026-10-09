@@ -306,7 +306,7 @@ export default function App() {
 
   useEffect(() => {
     const video = experienceVideoRef.current;
-    const section = video?.closest<HTMLElement>('.experience-section');
+    const section = video?.closest<HTMLElement>('.exp');
     if (!video || !section) return;
 
     const startLoading = () => {
