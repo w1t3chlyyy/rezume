@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Benai Timur — 3D Портфолио</title>
 <meta name="description" content="3D портфолио Benai Timur: Blender, 3D-анимации, модели и геймдев.">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600&family=Montserrat:wght@300;400;500&display=swap" rel="stylesheet">
@@ -335,7 +336,7 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
 <div id="stage">
   <div id="world">
     <div id="orb"></div>
-    <h1 id="headline"><span class="inner"><span style="--i:0">3D <span style="--i:4">Портфолио</span></span></h1>
+    <h1 id="headline"><span class="inner"><span style="--i:0">Мой</span> <span style="--i:1">3D</span> <span style="--i:2">рай</span> <span style="--i:3">для</span> <span style="--i:4">глаз</span></span></h1>
   </div>
 </div>
 <div class="vig"></div>
@@ -395,18 +396,14 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
      Вертикальная карточка в сфере: добавьте tall:true
      Файлы кладите в public/blender/ и указывайте путь /blender/имя.ext
      Если работ меньше 21, они автоматически повторяются по сфере (MIN_SLOTS). */
-
-var ITEMS=[
-  {type:'photo', src:'/blender/render1.jpg', title:'Рендер 01', place:'Blender · рендер', note:'Ночная заправка'},
-  {type:'video', src:'/blender/anim1.MOV', title:'Анимация 01', place:'Blender · анимация', note:'1 Анимацция проекта'},
-  {type:'video', src:'/blender/anim2.MOV', title:'Анимация 02', place:'Blender · анимация', note:'2 Анимацция проекта'},
-  {type:'video', src:'/blender/anim3.MOV', title:'Анимация 03', place:'Blender · анимация', note:'3 Анимацция проекта'},
-  {type:'video', src:'/blender/anim4.MOV', title:'Анимация 04', place:'Blender · анимация', note:'Заброшенная дорога'},
-  {type:'video', src:'/blender/anim5.MOV', title:'Анимация 05', place:'Blender · анимация', note:'Гараж'},
-  {type:'video', src:'/blender/anim6.MP4', title:'Анимация 06', place:'Blender · анимация', note:'Рабочее место'},
-  {type:'photo', src:'/blender/render2.jpg', title:'Рендер 02', place:'Blender · рендер', note:'Комната'}
-];
-  
+  var ITEMS=[
+    {type:'video',src:CDN+'hf_20260418_063509_7d167302-4fd4-480b-8260-18ab572333d4.mp4',title:'Проект 01',place:'Blender · 3D анимация',note:NOTE},
+    {type:'video',src:CDN+'hf_20260702_135039_b04d00db-6ee2-4e2a-a7f5-b2dfd3d24fd2.mp4',title:'Проект 02',place:'Blender · 3D анимация',note:NOTE},
+    Object.assign(still('hf_20260922_194349_26ffdbfd-ac5e-49e9-a07d-c06d3f7cb4cb'),{title:'Проект 03',place:'Blender · рендер',note:NOTE}),
+    Object.assign(still('hf_20260922_194350_5546ea3d-6336-42c7-a59f-06165c5802be'),{title:'Проект 04',place:'Blender · рендер',note:NOTE}),
+    Object.assign(still('hf_20260922_194349_b4533691-cb49-41d4-b56c-51f0fdcbe250'),{title:'Проект 05',place:'Blender · рендер',note:NOTE}),
+    Object.assign(still('hf_20260922_194416_47e18c62-253a-42e1-97a9-9e5f6a6b8d59'),{title:'Проект 06',place:'Blender · рендер',note:NOTE,tall:true})
+  ];
   var MIN_SLOTS=21;
   var N=Math.max(MIN_SLOTS,ITEMS.length);
   var doc=document.documentElement, body=document.body;
