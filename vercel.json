@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/blender", "destination": "/blender.html" }
+  ]
+}
