@@ -536,38 +536,51 @@ export default function App() {
         </div>
       </section>
 
-      <section
-        id="experience"
-        className="future-section experience-section"
-        aria-labelledby="experience-heading"
+      <section id="experience" className="exp" aria-labelledby="experience-heading">
+  <h2 id="experience-heading" className="sr-only">ОПЫТ</h2>
+
+  <div className="exp-stage">
+    <video
+      ref={experienceVideoRef}
+      className="exp-video"
+      autoPlay
+      loop
+      muted
+      playsInline
+      preload="none"
+      aria-hidden="true"
+    />
+
+    <svg className="exp-heading" viewBox="0 0 1000 300" aria-hidden="true">
+      <text
+        x="0"
+        y="240"
+        textLength="1000"
+        lengthAdjust="spacingAndGlyphs"
       >
-        <video
-          ref={experienceVideoRef}
-          className="experience-background"
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="none"
-          aria-hidden="true"
-        />
-        <div className="experience-topline">
-          <p>3D &amp; Digital Designer &amp;<br />Frontend Developer</p>
-          <p>Pet Projects &amp; Freelance<br />2023 - Настоящее время</p>
-        </div>
-        <h2 id="experience-heading" className="experience-heading">ОПЫТ</h2>
-        <div className="experience-descriptions">
-          <p>UI &amp; UX: Дизайн сайтов и<br />веб интерфейсов</p>
-          <p>3D: GameDev &amp; Анимации</p>
-          <p>Dev: Сборка рабочих<br />сайтов/ботов/приложений</p>
-        </div>
-        <div className="experience-tools" aria-label="Инструменты и технологии">
-          <img
-            src="/experience-tools.png"
-            alt="Claude, Bolt, Spline, Figma, Blender, Lightroom, GitHub, Vercel и Visual Studio Code"
-          />
-        </div>
-      </section>
+        ОПЫТ
+      </text>
+    </svg>
+
+    <div className="exp-topline">
+      <p>3D &amp; Digital Designer &amp;<br />Frontend Developer</p>
+      <p>Pet Projects &amp; Freelance<br />2023 - Настоящее время</p>
+    </div>
+
+    <div className="exp-descriptions">
+      <p>UI &amp; UX: Дизайн сайтов и<br />веб интерфейсов</p>
+      <p>3D: GameDev &amp; Анимации</p>
+      <p>Dev: Сборка рабочих<br />сайтов/ботов/приложений</p>
+    </div>
+
+    <div className="exp-tools" aria-label="Инструменты и технологии">
+      <img
+        src="/experience-tools.png"
+        alt="Claude, Bolt, Spline, Figma, Blender, Lightroom, GitHub, Vercel и Visual Studio Code"
+      />
+    </div>
+  </div>
+</section>
 
       <section
         id="support"
