@@ -28,6 +28,10 @@ button:focus-visible {
   min-height: 560px;
 }
 
+.service-description-rest {
+  visibility: hidden;
+}
+
 .archive-dots {
   display: none;
 }
@@ -188,7 +192,13 @@ button:focus-visible {
     inset: auto;
   }
 
+  /* сила эффекта оверлея (mix-blend-mode: difference): 1 = как на десктопе, меньше = мягче */
+  .hero {
+    --hero-blend: 0.65;
+  }
+
   .hero-word {
+    opacity: var(--hero-blend);
     grid-column: 1 / -1;
     width: max-content;
     font-size: clamp(64px, 23vw, 132px);
@@ -276,6 +286,7 @@ button:focus-visible {
   }
 
   .service-item {
+    text-align: center;
     padding: 28px 0 32px;
     border-top: 1px solid rgb(255 255 255 / 14%);
     transition-delay: 0ms;
@@ -291,8 +302,19 @@ button:focus-visible {
   }
 
   .service-description {
-    margin-top: 14px;
+    width: min(100%, 420px);
+    margin: 14px auto 0;
     font-size: clamp(17px, 4.8vw, 22px);
+    text-align: center;
+  }
+
+  .service-description-typed {
+    width: 100%;
+  }
+
+  /* курсор не должен сдвигать центрированный текст */
+  .service-caret {
+    margin-right: -0.18em;
   }
 
   /* ---------- Кейсы ---------- */
@@ -488,7 +510,7 @@ button:focus-visible {
     grid-area: media;
     align-self: center;
     justify-self: center;
-    width: 100%;
+    width: 78%;
     margin-top: 12px;
     transform: none;
   }
