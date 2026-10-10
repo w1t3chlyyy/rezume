@@ -135,7 +135,13 @@ function ServiceNumber({ number }: { number: string }) {
       const ascent = metrics.actualBoundingBoxAscent;
       const descent = metrics.actualBoundingBoxDescent;
       const baseline = (rect.height - ascent - descent) / 2 + ascent;
-      maskContext.fillText(number, 0, baseline);
+      // на телефоне пункты выровнены по центру — центрируем и точечную цифру
+      const centered = style.textAlign === 'center';
+      const originX = centered
+        ? (rect.width - (metrics.actualBoundingBoxLeft + metrics.actualBoundingBoxRight)) / 2 +
+          metrics.actualBoundingBoxLeft
+        : 0;
+      maskContext.fillText(number, originX, baseline);
       const pixels = maskContext.getImageData(0, 0, width, height).data;
 
       context.clearRect(0, 0, width, height);
@@ -295,6 +301,9 @@ function ServiceItem({
         <span className="service-description-typed">
           {typedText}
           {isTyping && <span className="service-caret" />}
+          <span className="service-description-rest">
+            {description.slice(typedText.length)}
+          </span>
         </span>
       </p>
     </article>
