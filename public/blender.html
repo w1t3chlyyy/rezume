@@ -341,6 +341,32 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
 #stage{cursor:grab}
 #stage:active{cursor:grabbing}
 .card,#grid figure,button,a{cursor:pointer}
+
+/* ===== мобильная версия: две бесконечные ленты над и под надписью ===== */
+#rails{display:none}
+body.mob #stage,body.mob .vig{display:none}
+body.mob #rails{
+  position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;justify-content:center;
+  gap:clamp(18px,4.5vh,40px);
+  padding:calc(76px + var(--safe-top)) 0 calc(120px + var(--safe-bottom));
+  opacity:0;pointer-events:none;
+}
+body.mob.revealed #rails{opacity:1;transition:opacity 1.2s ease .2s}
+body.mob.lit #rails{opacity:.2;transition:opacity .4s ease}
+body.mob.gridview #rails{opacity:0;pointer-events:none;transition:opacity .4s ease}
+.rail{overflow:hidden;touch-action:pan-y;pointer-events:auto;cursor:grab;-webkit-user-select:none;user-select:none}
+.track{display:flex;gap:10px;width:max-content;will-change:transform}
+.rc{
+  position:relative;flex:0 0 auto;width:clamp(150px,50vw,230px);aspect-ratio:3/2;border-radius:14px;overflow:hidden;
+  background:linear-gradient(145deg,#232326,#0f0f11);border:1px solid rgba(255,255,255,.14);
+}
+.rc img{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s ease;pointer-events:none;-webkit-user-drag:none}
+.rc img.in{opacity:1}
+.railtitle{
+  font-family:var(--serif);font-weight:500;text-align:center;color:#fff;pointer-events:none;
+  font-size:clamp(22px,7.4vw,34px);line-height:1.2;letter-spacing:-.01em;padding:0 var(--pad);
+}
+body.mob:not(.lit) .gridbtn{left:auto;right:calc(var(--pad) + var(--safe-right));opacity:1;transform:none;pointer-events:auto}
 </style>
 </head>
 <body class="locked">
@@ -355,6 +381,12 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
   </div>
 </div>
 <div class="vig"></div>
+
+<div id="rails">
+  <div class="rail" id="railTop"><div class="track"></div></div>
+  <div class="railtitle">3D Портфолио</div>
+  <div class="rail" id="railBot"><div class="track"></div></div>
+</div>
 
 <section id="grid" aria-label="The Archive"><div class="rows" id="rows"></div></section>
 
@@ -431,6 +463,10 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
 
   doc.style.overflow='hidden';
 
+  /* телефон/планшет: вместо сферы две бесконечные ленты */
+  var MOB=matchMedia('(max-width:768px)').matches||matchMedia('(pointer:coarse)').matches;
+  if(MOB)body.classList.add('mob');
+
   /* ---------- build cards + grid ---------- */
   var cards=[], gridFigs=[];
   var GA=Math.PI*(3-Math.sqrt(5));
@@ -457,6 +493,72 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
     rows.appendChild(gf);
     gridFigs.push({el:gf,img:gf.querySelector('img')});
   });
+
+  /* ---------- ленты (мобильная версия) ---------- */
+  var railImgs=ITEMS.map(function(){return []});
+  var rails=[];
+  function buildRail(host,order,dir){
+    var track=host.querySelector('.track');
+    for(var rep=0;rep<2;rep++){
+      order.forEach(function(k){
+        var it=ITEMS[k], c=document.createElement('div');
+        c.className='rc'; c.dataset.k=k;
+        c.innerHTML='<img alt="" decoding="async" draggable="false">'+(it.type==='video'?PLAY:'');
+        railImgs[k].push(c.querySelector('img'));
+        track.appendChild(c);
+      });
+    }
+    var r={host:host,track:track,dir:dir,x:Math.random()*200,vel:0,W:0,down:false,moved:0,lx:0,sx:0,pid:null,card:null};
+    rails.push(r);
+    host.addEventListener('pointerdown',function(e){
+      if(shotOpen())return;
+      r.down=true; r.moved=0; r.sx=r.lx=e.clientX; r.pid=e.pointerId; r.vel=0;
+      r.card=e.target.closest&&e.target.closest('.rc');
+      try{host.setPointerCapture(e.pointerId)}catch(err){}
+    });
+    host.addEventListener('pointermove',function(e){
+      if(!r.down||e.pointerId!==r.pid)return;
+      var dx=e.clientX-r.lx; r.lx=e.clientX;
+      r.moved=Math.max(r.moved,Math.abs(e.clientX-r.sx));
+      r.x-=dx; r.vel=-dx;
+    });
+    var up=function(e){
+      if(!r.down||e.pointerId!==r.pid)return;
+      r.down=false;
+      try{host.releasePointerCapture(e.pointerId)}catch(err){}
+      if(e.type==='pointerup'&&r.moved<=10&&r.card){r.vel=0;openItem(+r.card.dataset.k,r.card,-1,true)}
+    };
+    host.addEventListener('pointerup',up);
+    host.addEventListener('pointercancel',up);
+  }
+  var lastT=0;
+  function railLoop(t){
+    var dt=Math.min(50,(t-lastT)||16); lastT=t;
+    var paused=shotOpen()||body.classList.contains('gridview');
+    rails.forEach(function(r){
+      if(!r.W){
+        var ch=r.track.children;
+        var d=ch[ITEMS.length].offsetLeft-ch[0].offsetLeft;
+        if(d>0)r.W=d;
+      }
+      if(!r.down&&!paused){
+        r.x+=r.dir*0.032*dt+r.vel*(dt/16.7);
+        r.vel*=Math.pow(.94,dt/16.7);
+      }
+      if(r.W){
+        var m=((r.x%r.W)+r.W)%r.W;
+        r.track.style.transform='translate3d('+(-m)+'px,0,0)';
+      }
+    });
+    requestAnimationFrame(railLoop);
+  }
+  if(MOB){
+    var order=ITEMS.map(function(_,k){return k});
+    buildRail($('railTop'),order,1);
+    buildRail($('railBot'),order.slice().reverse(),-1);
+    requestAnimationFrame(railLoop);
+    addEventListener('resize',function(){rails.forEach(function(r){r.W=0})});
+  }
 
   /* ---------- layout ---------- */
   var R=300, persp=1150, cw=300, lastW=0, lastH=0;
@@ -507,6 +609,7 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
     });
   }
   /* кадр из видео, если poster не указан (с запасным вариантом для iOS) */
+  var POSTER_TIME=3; /* секунда видео, которая показывается до нажатия */
   function frameOf(url,max){
     return new Promise(function(res){
       var v=document.createElement('video'), done=false;
@@ -527,36 +630,26 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
       v.addEventListener('loadeddata',function(){
         /* iOS: без короткого play() кадр часто не декодируется */
         var p=v.play();
-        var go=function(){try{v.pause();v.currentTime=.3}catch(e){snap()}};
+        var go=function(){try{v.pause();var d=v.duration||0;v.currentTime=d>POSTER_TIME+.2?POSTER_TIME:Math.max(0,d/2)}catch(e){snap()}};
         if(p&&p.then)p.then(go).catch(go); else go();
       });
       v.addEventListener('error',function(){fin(null)});
-      setTimeout(function(){fin(null)},12000);
-      v.src=url+'#t=0.1';
+      setTimeout(function(){fin(null)},15000);
+      v.src=url+'#t='+POSTER_TIME;
       v.load();
     });
   }
-  var PLACEHOLDER='data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2a2a2e"/><stop offset="1" stop-color="#121214"/></linearGradient></defs><rect width="3" height="2" fill="url(#g)"/></svg>');
-  /* цветная заглушка, если кадр из видео не достался */
-  function fallbackFor(k){
-    try{
-      var c=document.createElement('canvas'); c.width=480; c.height=320;
-      var g=c.getContext('2d'), h=(k*47+20)%360;
-      var gr=g.createLinearGradient(0,0,480,320);
-      gr.addColorStop(0,'hsl('+h+',38%,34%)'); gr.addColorStop(1,'hsl('+((h+40)%360)+',40%,12%)');
-      g.fillStyle=gr; g.fillRect(0,0,480,320);
-      return c.toDataURL('image/jpeg',.8);
-    }catch(e){return PLACEHOLDER}
-  }
+  var PLACEHOLDER='data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1c1c1f"/><stop offset="1" stop-color="#0c0c0d"/></linearGradient></defs><rect width="3" height="2" fill="url(#g)"/></svg>');
   function tick(){}
   var max=decodeMax();
   ITEMS.forEach(function(it,k){
     var cover=it.type==='video'?it.poster:(it.thumb||it.src);
-    var pr=cover?prep(cover,max):frameOf(it.src,max).then(function(u){return u||fallbackFor(k)});
+    var pr=cover?prep(cover,max):frameOf(it.src,max).then(function(u){return u||PLACEHOLDER});
     pr.then(function(u){
       it.cover=u;
       cards.forEach(function(c){if(c.item===k){c.img.src=u;c.img.classList.add('in')}});
       gridFigs[k].img.src=u;
+      railImgs[k].forEach(function(im){im.src=u;im.classList.add('in')});
     });
   });
   var splashUp=false;
@@ -669,7 +762,7 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
     }
     requestAnimationFrame(frame);
   }
-  frame();
+  if(!MOB)frame();
 
   /* ---------- drag ---------- */
   var downCard=-1, sxp=0, syp=0, lxp=0, lyp=0, moved=0, ptype='mouse', captured=false, pid=null, active=false;
@@ -727,7 +820,7 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
   function openSlot(slot){openItem(cards[slot].item,cards[slot].el,slot,false)}
   function openItem(k,srcEl,slot,fromGrid){
     var it=ITEMS[k], myToken=++token, isV=it.type==='video';
-    cur={k:k,slot:slot,fromGrid:fromGrid};
+    cur={k:k,slot:slot,fromGrid:fromGrid,srcEl:srcEl};
     shotEl.classList.toggle('isvideo',isV);
     $('litTitle').textContent=it.title||'';
     $('litWhere').textContent=it.place||'';
@@ -768,7 +861,7 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
     token++;
     focused=-1;
     try{litVid.pause()}catch(e){}
-    var el=cur.fromGrid?gridFigs[cur.k].el:cards[cur.slot].el;
+    var el=(cur.srcEl&&cur.srcEl.isConnected&&cur.srcEl.offsetParent!==null)?cur.srcEl:(cur.fromGrid?gridFigs[cur.k].el:cards[cur.slot].el);
     var r=el.getBoundingClientRect();
     var pr=plate.getBoundingClientRect();
     var sc=Math.max(.04,r.width/pr.width);
