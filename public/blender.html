@@ -350,7 +350,7 @@ body.mob #stage,body.mob .vig{display:none}
 body.mob #rails{
   position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;justify-content:center;
   gap:clamp(18px,4.5vh,40px);
-  padding:calc(76px + var(--safe-top)) 0 calc(120px + var(--safe-bottom));
+  padding:calc(76px + var(--safe-top)) 0 calc(150px + var(--safe-bottom));
   opacity:0;pointer-events:none;
 }
 body.mob.revealed #rails{opacity:1;transition:opacity 1.2s ease .2s}
@@ -368,6 +368,7 @@ body.mob.gridview #rails{opacity:0;pointer-events:none;transition:opacity .4s ea
   font-family:var(--serif);font-weight:500;text-align:center;color:#fff;pointer-events:none;
   font-size:clamp(22px,7.4vw,34px);line-height:1.2;letter-spacing:-.01em;padding:0 var(--pad);
 }
+body.mob .bio.chrome{max-width:calc(100vw - var(--pad) * 2 - 64px - var(--safe-left) - var(--safe-right))}
 body.mob:not(.lit) .gridbtn{left:auto;right:calc(var(--pad) + var(--safe-right));opacity:1;transform:none;pointer-events:auto}
 </style>
 </head>
@@ -399,7 +400,7 @@ body.mob:not(.lit) .gridbtn{left:auto;right:calc(var(--pad) + var(--safe-right))
 
 <aside class="bio chrome">
   <div class="who"><b>benai timur</b></div>
-  <p>3d анимации, рендеры и модели в Blender. геймдев и визуал для игр и брендов</p>
+  <p>3d анимации, рендеры и модели в Blender</p>
 </aside>
 
 <div class="colophon chrome">2023 — настоящее время</div>
