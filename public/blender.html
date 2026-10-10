@@ -337,6 +337,8 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
 .close{z-index:2}
 .play{position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.75);background:rgba(0,0,0,.4);pointer-events:none;z-index:2}
 .play::after{content:"";position:absolute;top:50%;left:50%;transform:translate(-35%,-50%);border-style:solid;border-width:5px 0 5px 8px;border-color:transparent transparent transparent #fff}
+/* на загрузке курсор скрыт */
+#intro,#intro *{cursor:none !important}
 /* обычный курсор */
 #stage{cursor:grab}
 #stage:active{cursor:grabbing}
@@ -397,7 +399,7 @@ body.mob:not(.lit) .gridbtn{left:auto;right:calc(var(--pad) + var(--safe-right))
 
 <aside class="bio chrome">
   <div class="who"><b>benai timur</b></div>
-  <p>дизайн + 3d + разработка. один человек вместо 3 специалистов</p>
+  <p>3d анимации, рендеры и модели в Blender. геймдев и визуал для игр и брендов</p>
 </aside>
 
 <div class="colophon chrome">2023 — настоящее время</div>
