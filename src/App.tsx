@@ -24,7 +24,7 @@ const archiveCards = [
   {
     title: 'VERDE · CRYPTOWALLET',
     date: '05.03.26',
-    href: 'https://T.ME/VerdeWalletBot/app',
+    href: 'https://t.me/VerdeWalletBot/app',
     imageSrc: '/verde.png',
   },
   {
@@ -66,7 +66,13 @@ function ArchiveCard({
       aria-label={`${title}, ${date}`}
     >
       {imageSrc ? (
-        <img className="archive-art-image" src={imageSrc} alt="" />
+        <img
+          className="archive-art-image"
+          src={imageSrc}
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
       ) : (
         <div className="archive-art" aria-hidden="true">
           <div className="archive-art-disc">
@@ -164,7 +170,6 @@ function ServiceNumber({ number }: { number: string }) {
           }
         }
       }
-
     };
 
     const resizeObserver = new ResizeObserver(() => {
@@ -172,7 +177,14 @@ function ServiceNumber({ number }: { number: string }) {
       frame = requestAnimationFrame(drawNumber);
     });
     resizeObserver.observe(container);
-    void document.fonts.ready.then(() => {
+
+    // Шрифт Unbounded может ещё не быть загружен к первому рисованию
+    // (особенно на мобильной сети) — явно ждём именно его, а потом перерисовываем.
+    const style = getComputedStyle(container);
+    const fontReady = document.fonts
+      .load(`${style.fontWeight} 100px ${style.fontFamily}`, number)
+      .catch(() => undefined);
+    void Promise.all([fontReady, document.fonts.ready]).then(() => {
       if (active) drawNumber();
     });
     drawNumber();
@@ -195,15 +207,34 @@ function ServiceItem({
   number,
   description,
   index,
-  isVisible,
 }: {
   number: string;
   description: string;
   index: number;
-  isVisible: boolean;
 }) {
+  const itemRef = useRef<HTMLElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
   const [typedText, setTypedText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+
+  // Каждый пункт сам следит за появлением: на телефоне пункты идут столбиком,
+  // и печать должна начинаться, когда пункт реально попал в экран.
+  useEffect(() => {
+    const item = itemRef.current;
+    if (!item) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        setIsVisible(true);
+        observer.disconnect();
+      },
+      { threshold: 0.3, rootMargin: '0px 0px -8% 0px' },
+    );
+
+    observer.observe(item);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (!isVisible) return;
@@ -218,23 +249,30 @@ function ServiceItem({
     setIsTyping(false);
     let characterIndex = 0;
     let typeTimer = 0;
-    const sequenceDelay = services
-      .slice(0, index)
-      .reduce(
-        (delay, service) => delay + service.description.length * 34 + 350,
-        600,
-      );
+
+    // На десктопе три пункта в одной строке печатаются по очереди,
+    // на телефоне каждый стартует сам, когда до него доскроллили.
+    const isDesktop = window.matchMedia('(min-width: 768px)').matches;
+    const sequenceDelay = isDesktop
+      ? services
+          .slice(0, index)
+          .reduce(
+            (delay, service) => delay + service.description.length * 34 + 350,
+            600,
+          )
+      : 250;
+
     const startTimer = window.setTimeout(() => {
-        setIsTyping(true);
-        const typeNextCharacter = () => {
-          characterIndex += 1;
-          setTypedText(description.slice(0, characterIndex));
-          if (characterIndex < description.length) {
-            typeTimer = window.setTimeout(typeNextCharacter, 34);
-          } else {
-            setIsTyping(false);
-          }
-        };
+      setIsTyping(true);
+      const typeNextCharacter = () => {
+        characterIndex += 1;
+        setTypedText(description.slice(0, characterIndex));
+        if (characterIndex < description.length) {
+          typeTimer = window.setTimeout(typeNextCharacter, 34);
+        } else {
+          setIsTyping(false);
+        }
+      };
       typeNextCharacter();
     }, sequenceDelay);
 
@@ -246,6 +284,7 @@ function ServiceItem({
 
   return (
     <article
+      ref={itemRef}
       className={`service-item${isVisible ? ' is-visible' : ''}`}
       style={{ '--item-order': index } as React.CSSProperties}
       aria-label={`${number}: ${description.replace('\n', ' ')}`}
@@ -263,29 +302,13 @@ function ServiceItem({
 }
 
 export default function App() {
-  const servicesRef = useRef<HTMLElement>(null);
-  const [servicesVisible, setServicesVisible] = useState(false);
   const archiveRef = useRef<HTMLElement>(null);
+  const galleryRef = useRef<HTMLDivElement>(null);
   const [archiveVisible, setArchiveVisible] = useState(false);
+  const [activeCard, setActiveCard] = useState(0);
+  const navRef = useRef<HTMLElement>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const experienceVideoRef = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    const section = servicesRef.current;
-    if (!section) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        setServicesVisible(true);
-        observer.disconnect();
-      },
-      { threshold: 0.1 },
-    );
-
-    observer.observe(section);
-    return () => observer.disconnect();
-  }, []);
 
   useEffect(() => {
     const section = archiveRef.current;
@@ -332,15 +355,63 @@ export default function App() {
     return () => observer.disconnect();
   }, []);
 
+  // Мобильное меню: закрытие по Escape, тапу мимо меню и при смене ширины экрана
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+
+    const closeMenu = () => setIsMobileMenuOpen(false);
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeMenu();
+    };
+    const onPointerDown = (event: PointerEvent) => {
+      if (navRef.current && !navRef.current.contains(event.target as Node)) {
+        closeMenu();
+      }
+    };
+    const onResize = () => {
+      if (window.innerWidth >= 768) closeMenu();
+    };
+
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('resize', onResize);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('resize', onResize);
+    };
+  }, [isMobileMenuOpen]);
+
+  // Индикатор свайпа галереи кейсов (на телефоне галерея — горизонтальная лента)
+  const handleGalleryScroll = () => {
+    const gallery = galleryRef.current;
+    const firstCard = gallery?.firstElementChild as HTMLElement | null;
+    if (!gallery || !firstCard) return;
+
+    const lastIndex = archiveCards.length - 1;
+    const atEnd =
+      gallery.scrollLeft + gallery.clientWidth >= gallery.scrollWidth - 4;
+    if (atEnd) {
+      setActiveCard(lastIndex);
+      return;
+    }
+
+    const gap = parseFloat(getComputedStyle(gallery).columnGap) || 0;
+    const step = firstCard.offsetWidth + gap;
+    setActiveCard(
+      Math.min(lastIndex, Math.max(0, Math.round(gallery.scrollLeft / step))),
+    );
+  };
+
   if (window.location.pathname === '/blender') {
-    return <BlenderPage />;
+    return <BlenderRedirect />;
   }
 
   return (
     <>
       <section
         id="top"
-        className="relative h-screen w-full overflow-hidden bg-black select-none"
+        className="hero relative h-screen w-full overflow-hidden bg-black select-none"
       >
         <video
           className="absolute inset-0 w-full h-full object-cover"
@@ -348,11 +419,14 @@ export default function App() {
           loop
           muted
           playsInline
+          disablePictureInPicture
           preload="auto"
+          aria-hidden="true"
           src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260418_063509_7d167302-4fd4-480b-8260-18ab572333d4.mp4"
         />
 
         <nav
+          ref={navRef}
           aria-label="Основная навигация"
           className="site-nav absolute z-20 px-6 md:px-10 pt-6 top-0 left-0 right-0 flex items-center justify-between gap-4"
         >
@@ -392,7 +466,7 @@ export default function App() {
 
           <button
             type="button"
-            className="mobile-menu-toggle md:hidden"
+            className={`mobile-menu-toggle md:hidden${isMobileMenuOpen ? ' is-open' : ''}`}
             aria-label={isMobileMenuOpen ? 'Закрыть меню' : 'Открыть меню'}
             aria-expanded={isMobileMenuOpen}
             aria-controls="mobile-navigation"
@@ -420,25 +494,38 @@ export default function App() {
           )}
         </nav>
 
-        <div className="relative h-full w-full">
+        {/* Один настоящий заголовок для SEO и скринридеров;
+            три крупных слова ниже — визуальные. */}
+        <h1 className="sr-only">рай для глаз</h1>
+
+        <div className="hero-stage relative h-full w-full">
           <div className="hero-copy absolute left-4 md:left-10 top-[18%]">
-            <h1 className="hero-title text-white font-medium text-[14vw] md:text-[13vw]">
+            <div
+              className="hero-title hero-word hero-word-1 text-white font-medium text-[14vw] md:text-[13vw]"
+              aria-hidden="true"
+            >
               рай
-            </h1>
+            </div>
             <p className="hero-description absolute right-4 top-[9vh] md:top-[25vh] max-w-[240px] text-[15px] leading-snug text-white/90">
               дизайн + 3d + разработка. один человек вместо 3 специалистов
             </p>
           </div>
 
-          <h1 className="hero-title absolute text-white font-medium text-[14vw] md:text-[13vw] right-4 md:right-10 top-[38%]">
+          <div
+            className="hero-title hero-word hero-word-2 absolute text-white font-medium text-[14vw] md:text-[13vw] right-4 md:right-10 top-[38%]"
+            aria-hidden="true"
+          >
             для
-          </h1>
+          </div>
 
-          <h1 className="hero-title absolute text-white font-medium text-[14vw] md:text-[13vw] left-[18%] md:left-[28%] top-[58%]">
+          <div
+            className="hero-title hero-word hero-word-3 absolute text-white font-medium text-[14vw] md:text-[13vw] left-[18%] md:left-[28%] top-[58%]"
+            aria-hidden="true"
+          >
             глаз
-          </h1>
+          </div>
 
-          <div className="absolute right-6 md:right-24 top-[14%]">
+          <div className="hero-stat hero-stat-year absolute right-6 md:right-24 top-[14%]">
             <span className="stat-value text-4xl md:text-5xl font-medium tracking-tight text-white">
               2023
             </span>
@@ -447,9 +534,9 @@ export default function App() {
             </p>
           </div>
 
-          <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-b from-transparent to-black" />
+          <div className="hero-fade pointer-events-none absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-b from-transparent to-black" />
 
-          <div className="absolute left-6 md:left-20 bottom-20 md:bottom-24">
+          <div className="hero-stat hero-stat-a absolute left-6 md:left-20 bottom-20 md:bottom-24">
             <span className="stat-value text-4xl md:text-5xl font-medium tracking-tight text-white">
               +9
             </span>
@@ -458,7 +545,7 @@ export default function App() {
             </p>
           </div>
 
-          <div className="absolute right-6 md:right-20 bottom-16 md:bottom-20">
+          <div className="hero-stat hero-stat-b absolute right-6 md:right-20 bottom-16 md:bottom-20">
             <span className="stat-value text-4xl md:text-5xl font-medium tracking-tight text-white">
               +30
             </span>
@@ -469,20 +556,10 @@ export default function App() {
         </div>
       </section>
 
-      <section
-        ref={servicesRef}
-        id="platform"
-        className="services-section"
-        aria-label="Скиллы"
-      >
+      <section id="platform" className="services-section" aria-label="Скиллы">
         <div className="services-grid">
           {services.map((service, index) => (
-            <ServiceItem
-              key={service.number}
-              {...service}
-              index={index}
-              isVisible={servicesVisible}
-            />
+            <ServiceItem key={service.number} {...service} index={index} />
           ))}
         </div>
       </section>
@@ -515,8 +592,6 @@ export default function App() {
               <a
                 className="archive-button archive-button-secondary"
                 href="/blender"
-                target="_blank"
-                rel="noopener noreferrer"
               >
                 3D Портфолио <span aria-hidden="true">↗</span>
               </a>
@@ -524,7 +599,12 @@ export default function App() {
           </div>
         </div>
 
-        <div className="archive-gallery" id="case-gallery">
+        <div
+          ref={galleryRef}
+          className="archive-gallery"
+          id="case-gallery"
+          onScroll={handleGalleryScroll}
+        >
           {archiveCards.map((card, index) => (
             <ArchiveCard
               key={card.title}
@@ -534,53 +614,65 @@ export default function App() {
             />
           ))}
         </div>
+
+        <div className="archive-dots" aria-hidden="true">
+          {archiveCards.map((card, index) => (
+            <span
+              key={card.title}
+              className={index === activeCard ? 'is-active' : undefined}
+            />
+          ))}
+        </div>
       </section>
 
       <section id="experience" className="exp" aria-labelledby="experience-heading">
-  <h2 id="experience-heading" className="sr-only">ОПЫТ</h2>
+        <h2 id="experience-heading" className="sr-only">ОПЫТ</h2>
 
-  <div className="exp-stage">
-    <video
-      ref={experienceVideoRef}
-      className="exp-video"
-      autoPlay
-      loop
-      muted
-      playsInline
-      preload="none"
-      aria-hidden="true"
-    />
+        <div className="exp-stage">
+          <video
+            ref={experienceVideoRef}
+            className="exp-video"
+            autoPlay
+            loop
+            muted
+            playsInline
+            disablePictureInPicture
+            preload="none"
+            aria-hidden="true"
+          />
 
-    <svg className="exp-heading" viewBox="0 0 1000 300" aria-hidden="true">
-      <text
-        x="0"
-        y="240"
-        textLength="1000"
-        lengthAdjust="spacingAndGlyphs"
-      >
-        ОПЫТ
-      </text>
-    </svg>
+          <svg className="exp-heading" viewBox="0 0 1000 300" aria-hidden="true">
+            <text
+              x="0"
+              y="240"
+              textLength="1000"
+              lengthAdjust="spacingAndGlyphs"
+            >
+              ОПЫТ
+            </text>
+          </svg>
 
-    <div className="exp-topline">
-      <p>3D &amp; Digital Designer &amp;<br />Frontend Developer</p>
-      <p>Pet Projects &amp; Freelance<br />2023 - Настоящее время</p>
-    </div>
+          <div className="exp-topline">
+            <p>3D &amp; Digital Designer &amp;<br />Frontend Developer</p>
+            <p>Pet Projects &amp; Freelance<br />2023 - Настоящее время</p>
+          </div>
 
-    <div className="exp-descriptions">
-      <p>UI &amp; UX: Дизайн сайтов и<br />веб интерфейсов</p>
-      <p>3D: GameDev &amp; Анимации</p>
-      <p>Dev: Сборка рабочих<br />сайтов/ботов/приложений</p>
-    </div>
+          <div className="exp-descriptions">
+            <p>UI &amp; UX: Дизайн сайтов и{' '}<br className="exp-br" />веб интерфейсов</p>
+            <p>3D: GameDev &amp; Анимации</p>
+            <p>Dev: Сборка рабочих{' '}<br className="exp-br" />сайтов/ботов/приложений</p>
+          </div>
 
-    <div className="exp-tools" aria-label="Инструменты и технологии">
-      <img
-        src="/experience-tools.png"
-        alt="Claude, Bolt, Spline, Figma, Blender, Lightroom, GitHub, Vercel и Visual Studio Code"
-      />
-    </div>
-  </div>
-</section>
+          <div className="exp-tools" aria-label="Инструменты и технологии">
+            <img
+              src="/experience-tools.png"
+              alt="Claude, Bolt, Spline, Figma, Blender, Lightroom, GitHub, Vercel и Visual Studio Code"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+        </div>
+      </section>
 
       <section
         id="support"
@@ -596,20 +688,10 @@ export default function App() {
           >
             Telegram
           </a>
-          <a
-            className="connect-action"
-            href="tel:+79944821648"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a className="connect-action" href="tel:+79944821648">
             Позвонить
           </a>
-          <a
-            className="connect-action"
-            href="mailto:w1t3chlyyy@gmail.com"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <a className="connect-action" href="mailto:w1t3chlyyy@gmail.com">
             Почта
           </a>
         </div>
@@ -621,22 +703,14 @@ export default function App() {
   );
 }
 
-function BlenderPage() {
-  return (
-    <main className="blender-page">
-      <div className="blender-page-content">
-        <p className="blender-page-eyebrow">S K I L L S / 0 2</p>
-        <h1>Blender</h1>
-        <p className="blender-page-note">Страница скоро появится.</p>
-        <a
-          className="blender-page-back"
-          href="/#top"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <span aria-hidden="true">←</span> На главную
-        </a>
-      </div>
-    </main>
-  );
+// 3D-портфолио — отдельная статическая страница public/blender.html.
+// На Vercel /blender открывается через rewrite, а в dev-сервере и превью AI Studio
+// rewrite нет — поэтому React перекидывает на сам файл, и вместо плоской заглушки
+// всегда открывается настоящая 3D-сфера.
+function BlenderRedirect() {
+  useEffect(() => {
+    window.location.replace('/blender.html');
+  }, []);
+
+  return <main className="blender-page" aria-label="Загрузка 3D портфолио" />;
 }
