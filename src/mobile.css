@@ -1,0 +1,579 @@
+/* =============================================================
+   MOBILE ADAPTATION
+   Подключается ПОСЛЕ index.css (см. main.tsx). Десктоп не затрагивает:
+   все правила, меняющие вёрстку, живут внутри @media (max-width: 767px)
+   (767px = граница Tailwind `md`, чтобы JS/Tailwind и CSS не расходились).
+   Нелейеренный CSS всегда побеждает Tailwind-утилиты, поэтому
+   `!important` нигде не нужен.
+   ============================================================= */
+
+/* ---------- Базовое (все экраны) ---------- */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overflow-x: clip;
+}
+
+body {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid #5aa9ff;
+  outline-offset: 3px;
+}
+
+.hero {
+  min-height: 560px;
+}
+
+.archive-dots {
+  display: none;
+}
+
+@keyframes mobile-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .mobile-navigation {
+    animation: none;
+  }
+
+  .mobile-menu-toggle span {
+    transition: none;
+  }
+}
+
+/* =============================================================
+   ТЕЛЕФОНЫ
+   ============================================================= */
+@media (max-width: 767px) {
+  /* ---------- Навигация ---------- */
+  .site-nav {
+    min-height: 0;
+    gap: 10px;
+    padding: calc(env(safe-area-inset-top, 0px) + 14px)
+      max(16px, env(safe-area-inset-right, 0px)) 0
+      max(16px, env(safe-area-inset-left, 0px));
+  }
+
+  .site-nav > a:first-child {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-right: auto;
+    padding: 0 4px;
+    font-size: 14px;
+  }
+
+  .nav-contact {
+    order: 1;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-left: 0;
+    padding: 0 18px;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .mobile-menu-toggle {
+    order: 2;
+    display: flex;
+    flex: 0 0 44px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 13px;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+
+  .mobile-menu-toggle span {
+    width: 100%;
+    height: 1.5px;
+    margin: 0;
+    border-radius: 2px;
+    transition: transform 260ms cubic-bezier(0.2, 0.75, 0.25, 1);
+  }
+
+  .mobile-menu-toggle.is-open span:first-child {
+    transform: translateY(3.75px) rotate(45deg);
+  }
+
+  .mobile-menu-toggle.is-open span:last-child {
+    transform: translateY(-3.75px) rotate(-45deg);
+  }
+
+  .mobile-navigation {
+    top: calc(100% + 8px);
+    right: max(16px, env(safe-area-inset-right, 0px));
+    left: max(16px, env(safe-area-inset-left, 0px));
+    gap: 0;
+    padding: 6px;
+    border-radius: 22px;
+    transform-origin: top right;
+    animation: mobile-menu-in 220ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+  }
+
+  .mobile-navigation a {
+    display: flex;
+    align-items: center;
+    min-height: 54px;
+    padding: 0 16px;
+    border-radius: 16px;
+    font-size: 17px;
+    font-weight: 500;
+  }
+
+  .mobile-navigation a:active {
+    background: rgb(255 255 255 / 12%);
+  }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    height: 100vh; /* запасной вариант для старых браузеров */
+    height: 100svh; /* без прыжков из-за адресной строки Safari/Chrome */
+    min-height: 600px;
+  }
+
+  /* мягкая тень сверху, чтобы навигация читалась на любом кадре видео */
+  .hero::before {
+    position: absolute;
+    z-index: 1;
+    inset: 0 0 auto 0;
+    height: 180px;
+    background: linear-gradient(to bottom, rgb(0 0 0 / 55%), transparent);
+    content: '';
+    pointer-events: none;
+  }
+
+  /* Вместо абсолютных процентов — сетка: слова, описание и цифры
+     выстраиваются от нижнего края и не наезжают друг на друга
+     на любой высоте экрана. */
+  .hero-stage {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-content: end;
+    column-gap: 12px;
+    padding: 110px max(20px, env(safe-area-inset-right, 0px))
+      calc(26px + env(safe-area-inset-bottom, 0px))
+      max(20px, env(safe-area-inset-left, 0px));
+  }
+
+  .hero-copy {
+    display: contents;
+  }
+
+  .hero-word,
+  .hero-description,
+  .hero-stat {
+    position: relative;
+    z-index: 2;
+    inset: auto;
+  }
+
+  .hero-word {
+    grid-column: 1 / -1;
+    width: max-content;
+    font-size: clamp(64px, 23vw, 132px);
+    letter-spacing: 0.01em;
+    line-height: 0.92;
+  }
+
+  .hero-word-1 {
+    order: 1;
+    justify-self: start;
+  }
+
+  .hero-word-2 {
+    order: 2;
+    justify-self: end;
+  }
+
+  .hero-word-3 {
+    order: 3;
+    justify-self: start;
+    margin-left: clamp(16px, 8vw, 64px);
+  }
+
+  .hero-description {
+    order: 4;
+    grid-column: 1 / -1;
+    justify-self: start;
+    width: min(100%, 290px);
+    max-width: none;
+    margin: 22px 0 0;
+    color: rgb(255 255 255 / 80%);
+    font-size: 15px;
+    line-height: 1.5;
+    text-align: left;
+  }
+
+  .hero-stat {
+    margin-top: 30px;
+    padding-top: 14px;
+    border-top: 1px solid rgb(255 255 255 / 22%);
+  }
+
+  .hero-stat-year {
+    order: 5;
+  }
+
+  .hero-stat-a {
+    order: 6;
+  }
+
+  .hero-stat-b {
+    order: 7;
+  }
+
+  .hero-stat .stat-value {
+    display: block;
+    font-size: clamp(22px, 6.8vw, 32px);
+    line-height: 1.1;
+  }
+
+  .hero-stat p {
+    margin-top: 6px;
+    font-size: 12px;
+    line-height: 1.3;
+    text-align: left;
+  }
+
+  /* ---------- Скиллы ---------- */
+  .services-section {
+    height: auto;
+    min-height: 0;
+    padding: 72px 24px 80px;
+  }
+
+  .services-grid {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 100%;
+    max-width: 520px;
+    margin: 0 auto;
+    grid-template-columns: 1fr;
+    row-gap: 0;
+    transform: none;
+  }
+
+  .service-item {
+    padding: 28px 0 32px;
+    border-top: 1px solid rgb(255 255 255 / 14%);
+    transition-delay: 0ms;
+  }
+
+  .service-item:first-child {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .service-number {
+    font-size: clamp(88px, 28vw, 140px);
+  }
+
+  .service-description {
+    margin-top: 14px;
+    font-size: clamp(17px, 4.8vw, 22px);
+  }
+
+  /* ---------- Кейсы ---------- */
+  .archive-section {
+    min-height: 0;
+    padding: 56px 20px 32px;
+    border-radius: 26px;
+  }
+
+  .archive-intro {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .archive-intro h2 {
+    font-size: clamp(36px, 11.2vw, 64px);
+  }
+
+  .archive-copy {
+    max-width: none;
+    justify-self: start;
+    padding-top: 0;
+  }
+
+  .archive-copy p {
+    margin: 0 0 24px;
+    font-size: 16px;
+    line-height: 1.55;
+  }
+
+  .archive-actions {
+    gap: 10px;
+  }
+
+  .archive-button {
+    flex: 1 1 auto;
+    justify-content: center;
+    min-height: 52px;
+    padding: 0 22px;
+    font-size: 15px;
+  }
+
+  /* Галерея: горизонтальный свайп с «подглядыванием» следующей карточки.
+     Вместо абсолютных top/left, которые обрезались у нижнего края. */
+  .archive-gallery {
+    position: relative;
+    top: auto;
+    right: auto;
+    left: auto;
+    display: flex;
+    height: auto;
+    gap: 14px;
+    margin: 36px -20px 0;
+    padding: 22px 20px 20px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-padding-inline: 20px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .archive-gallery::-webkit-scrollbar {
+    display: none;
+  }
+
+  .archive-gallery .archive-card {
+    position: relative;
+    top: auto;
+    left: auto;
+    z-index: auto;
+    flex: 0 0 min(76vw, 340px);
+    width: min(76vw, 340px);
+    border-radius: 20px;
+    scroll-snap-align: start;
+  }
+
+  .archive-gallery .archive-card-1 {
+    --card-rotation: -1.5deg;
+  }
+
+  .archive-gallery .archive-card-2 {
+    --card-rotation: 1deg;
+  }
+
+  .archive-gallery .archive-card-3 {
+    --card-rotation: -1deg;
+  }
+
+  .archive-gallery .archive-card-4 {
+    --card-rotation: 1.5deg;
+  }
+
+  /* на тач-экранах :hover «залипает» — гасим hover-эффекты, даём отклик на нажатие */
+  .archive-card.is-visible:hover,
+  .archive-card.is-visible:focus-visible {
+    border-color: #bcbcb8;
+    box-shadow: 0 24px 60px rgb(0 0 0 / 12%);
+    transform: rotate(var(--card-rotation));
+  }
+
+  .archive-card.is-visible:hover::before,
+  .archive-card.is-visible:focus-visible::before {
+    opacity: 0;
+    animation: none;
+  }
+
+  .archive-card.is-visible:active {
+    transform: scale(0.985) rotate(var(--card-rotation));
+    transition-delay: 0ms;
+    transition-duration: 120ms;
+  }
+
+  .archive-card-caption {
+    min-height: 44px;
+    padding-top: 10px;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+  }
+
+  .archive-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  .archive-dots span {
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: rgb(0 0 0 / 22%);
+    transition:
+      width 250ms ease,
+      background-color 250ms ease;
+  }
+
+  .archive-dots span.is-active {
+    width: 20px;
+    background: #111;
+  }
+
+  /* ---------- Опыт ---------- */
+  .exp-stage {
+    display: grid;
+    height: auto;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'top'
+      'media'
+      'desc'
+      'tools';
+    padding: 44px 20px calc(24px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .exp-topline {
+    position: relative;
+    inset: auto;
+    grid-area: top;
+    display: grid;
+    gap: 10px;
+  }
+
+  .exp-topline p,
+  .exp-topline p:last-child {
+    font-size: clamp(14px, 4.2vw, 18px);
+    text-align: left;
+  }
+
+  .exp-topline p:last-child {
+    color: rgb(255 255 255 / 60%);
+    font-size: clamp(12px, 3.6vw, 15px);
+  }
+
+  /* видео и заголовок «ОПЫТ» делят одну ячейку сетки —
+     заголовок всегда ровно по центру видео.
+     Если захочется картинку покрупнее: object-fit: cover; aspect-ratio: 4 / 5; */
+  .exp-video {
+    position: relative;
+    inset: auto;
+    grid-area: media;
+    width: calc(100% + 40px);
+    height: auto;
+    margin: 12px -20px 0;
+    aspect-ratio: 16 / 10;
+    object-fit: contain;
+    object-position: center;
+  }
+
+  .exp-heading {
+    position: relative;
+    inset: auto;
+    grid-area: media;
+    align-self: center;
+    justify-self: center;
+    width: 100%;
+    margin-top: 12px;
+    transform: none;
+  }
+
+  .exp-descriptions {
+    position: relative;
+    inset: auto;
+    grid-area: desc;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    margin-top: 20px;
+  }
+
+  .exp-descriptions p,
+  .exp-descriptions p:nth-child(2),
+  .exp-descriptions p:last-child {
+    padding: 16px 0;
+    border-top: 1px solid rgb(255 255 255 / 18%);
+    font-size: 16px;
+    line-height: 1.4;
+    text-align: left;
+  }
+
+  .exp-descriptions p:last-child {
+    border-bottom: 1px solid rgb(255 255 255 / 18%);
+  }
+
+  .exp-br {
+    display: none;
+  }
+
+  .exp-tools {
+    position: relative;
+    inset: auto;
+    grid-area: tools;
+    margin-top: 28px;
+    padding-bottom: 6px;
+  }
+
+  .exp-tools img {
+    width: 100%;
+  }
+
+  /* ---------- Коннект ---------- */
+  .connect-section {
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+    padding: 44px 20px calc(30px + env(safe-area-inset-bottom, 0px));
+    border-radius: 26px 26px 0 0;
+  }
+
+  .connect-actions {
+    width: 100%;
+    max-width: 520px;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .connect-action {
+    min-height: 58px;
+    border-width: 2px;
+    font-size: 15px;
+  }
+
+  /* огромный футер-слоган в две строки, по ширине экрана */
+  .connect-heading {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    width: auto;
+    margin: 56px 0 0;
+    font-size: clamp(40px, 14vw, 88px);
+    letter-spacing: -0.06em;
+    line-height: 0.9;
+    text-align: center;
+    transform: none;
+    white-space: normal;
+  }
+
+  /* ---------- /blender (заглушка) ---------- */
+  .blender-page {
+    min-height: 100svh;
+    padding: max(24px, env(safe-area-inset-top, 0px)) 24px
+      max(24px, env(safe-area-inset-bottom, 0px));
+  }
+}
