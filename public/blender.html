@@ -44,9 +44,19 @@ a{-webkit-tap-highlight-color:transparent}
   position:fixed;inset:0;z-index:10;perspective:var(--persp);perspective-origin:50% 50%;
   overflow:hidden;touch-action:none;transition:opacity .6s ease,filter .6s ease;
 }
-@media (pointer:coarse){   
-  html,body{overflow:hidden;height:100%}   
-  #stage{touch-action:none} 
+/* телефон: страница не скроллится, шар вращается свайпом в любую сторону */
+@media (pointer:coarse){
+  html,body{overflow:hidden;height:100%}
+  #stage{touch-action:none}
+}
+/* тело шара: даёт объём, даже если часть карточек тёмная */
+#ball{
+  position:absolute;left:50%;top:50%;border-radius:50%;pointer-events:none;
+  transform:translate(-50%,-50%);
+  background:radial-gradient(circle at 34% 28%,#44444b 0%,#1a1a1e 42%,#060607 78%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),
+             inset -22px -30px 70px rgba(0,0,0,.75),
+             0 0 60px rgba(255,255,255,.05);
 }
 #world{position:absolute;top:50%;left:50%;width:0;height:0;transform-style:preserve-3d;will-change:transform}
 #orb{position:absolute;top:0;left:0;width:0;height:0;transform-style:preserve-3d;opacity:1;transform:none}
@@ -82,7 +92,8 @@ body.gridview .vig,body.lit .vig{opacity:0}
 }
 .card.tall{height:calc(var(--cw) * 1.25);margin-top:calc(var(--cw) * -.625)}
 .card figure{
-  position:relative;width:100%;height:100%;overflow:hidden;border-radius:3px;background:#0a0a0a;
+  position:relative;width:100%;height:100%;overflow:hidden;border-radius:3px;
+  background:linear-gradient(145deg,#232326,#0f0f11);
   transition:transform .5s ease;
 }
 .card:hover figure{transform:scale(1.045)}
@@ -91,7 +102,7 @@ body.gridview .vig,body.lit .vig{opacity:0}
 body.revealed .card img{transition:opacity .8s ease-out}
 .card figure::after{
   content:"";position:absolute;inset:0;background:rgba(0,0,0,var(--d,0));
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.07);border-radius:3px;pointer-events:none;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.18);border-radius:3px;pointer-events:none;
 }
 
 /* chrome */
@@ -337,6 +348,7 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
 <div id="scrolltrack"></div>
 
 <div id="stage">
+  <div id="ball"></div>
   <div id="world">
     <div id="orb"></div>
     <h1 id="headline"><span class="inner"><span style="--i:0">3D Портфолио</span></span></h1>
@@ -398,7 +410,7 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
      Фото:  {type:'photo', src:'/blender/pic.jpg', thumb:'/blender/pic-small.jpg' (необязательно), title:'', place:'', note:''}
      Вертикальная карточка в сфере: добавьте tall:true
      Файлы кладите в public/blender/ и указывайте путь /blender/имя.ext
-     Если работ меньше 21, они автоматически повторяются по сфере (MIN_SLOTS). */
+     Если работ меньше MIN_SLOTS, они автоматически повторяются по сфере. */
   var ITEMS=[
     {type:'photo', src:'/blender/render1.jpg', title:'Рендер 01', place:'Blender · рендер', note:'Ночная заправка'},
     {type:'video', src:'/blender/anim1.MOV', title:'Анимация 01', place:'Blender · анимация', note:'1 Анимация'},
@@ -409,11 +421,11 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
     {type:'video', src:'/blender/anim6.MP4', title:'Анимация 06', place:'Blender · анимация', note:'Рабочее место'},
     {type:'photo', src:'/blender/render2.jpg', title:'Рендер 02', place:'Blender · рендер', note:'Комната'}
   ];
-  var MIN_SLOTS=21;
+  var MIN_SLOTS=innerWidth<=640?36:21;
   var N=Math.max(MIN_SLOTS,ITEMS.length);
   var doc=document.documentElement, body=document.body;
   var $=function(id){return document.getElementById(id)};
-  var stage=$('stage'), world=$('world'), orb=$('orb'), headline=$('headline');
+  var stage=$('stage'), world=$('world'), orb=$('orb'), headline=$('headline'), ballEl=$('ball');
   var thumb=function(id){return CDN+id+'_min.webp'};
   var full=function(id){return CDN+id+'.png'};
 
@@ -451,13 +463,14 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
   function layout(){
     var w=innerWidth,h=innerHeight;
     var b=w<=380?0:w<=640?1:2;
-var hr=[.36,.38,.46][b], wr=[.44,.44,.58][b], fl=[100,110,155][b];
-R=Math.max(fl,Math.min(480,h*hr,w*wr));
-cw=Math.round(Math.max(72,R*[.5,.54,.47][b]));
-persp=w<=640?Math.round(R*2.5):w<=900?920:1150;
+    var hr=[.36,.38,.46][b], wr=[.46,.5,.58][b], fl=[100,110,155][b];
+    R=Math.max(fl,Math.min(480,h*hr,w*wr));
+    cw=Math.round(Math.max(72,R*[.56,.58,.47][b]));
+    persp=w<=640?Math.round(R*2.5):w<=900?920:1150;
     stage.style.setProperty('--persp',persp+'px');
     doc.style.setProperty('--persp',persp+'px');
     doc.style.setProperty('--cw',cw+'px');
+    ballEl.style.width=ballEl.style.height=Math.round(R*1.9)+'px';
     cards.forEach(function(c){
       var u=c.u;
       c.el.style.transform='translate3d('+(u.x*R)+'px,'+(-u.y*R)+'px,'+(u.z*R)+'px) rotateY('+u.lon+'deg) rotateX('+u.lat+'deg)';
@@ -493,34 +506,53 @@ persp=w<=640?Math.round(R*2.5):w<=900?920:1150;
       im.src=url;
     });
   }
-  /* кадр из видео, если poster не указан */
+  /* кадр из видео, если poster не указан (с запасным вариантом для iOS) */
   function frameOf(url,max){
     return new Promise(function(res){
       var v=document.createElement('video'), done=false;
-      v.crossOrigin='anonymous'; v.muted=true; v.playsInline=true; v.preload='auto';
-      function fin(r){if(done)return;done=true;try{v.removeAttribute('src');v.load()}catch(e){}res(r)}
-      v.addEventListener('loadeddata',function(){
-        try{v.currentTime=Math.min(.1,(v.duration||1)/2)}catch(e){fin(null)}
-      });
-      v.addEventListener('seeked',function(){
+      v.muted=true; v.defaultMuted=true; v.playsInline=true;
+      v.setAttribute('playsinline',''); v.setAttribute('webkit-playsinline','');
+      v.preload='auto';
+      function fin(r){if(done)return;done=true;try{v.pause();v.removeAttribute('src');v.load()}catch(e){}res(r)}
+      function snap(){
         try{
+          if(!v.videoWidth)return fin(null);
           var sc=Math.min(1,max/v.videoWidth), c=document.createElement('canvas');
           c.width=Math.round(v.videoWidth*sc); c.height=Math.round(v.videoHeight*sc);
           c.getContext('2d').drawImage(v,0,0,c.width,c.height);
           c.toBlob(function(b){fin(b?URL.createObjectURL(b):null)},'image/webp',.88);
         }catch(e){fin(null)}
+      }
+      v.addEventListener('seeked',snap);
+      v.addEventListener('loadeddata',function(){
+        /* iOS: без короткого play() кадр часто не декодируется */
+        var p=v.play();
+        var go=function(){try{v.pause();v.currentTime=.3}catch(e){snap()}};
+        if(p&&p.then)p.then(go).catch(go); else go();
       });
       v.addEventListener('error',function(){fin(null)});
       setTimeout(function(){fin(null)},12000);
-      v.src=url;
+      v.src=url+'#t=0.1';
+      v.load();
     });
   }
-  var PLACEHOLDER='data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2"><rect width="3" height="2" fill="#0d0d0d"/></svg>');
+  var PLACEHOLDER='data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2a2a2e"/><stop offset="1" stop-color="#121214"/></linearGradient></defs><rect width="3" height="2" fill="url(#g)"/></svg>');
+  /* цветная заглушка, если кадр из видео не достался */
+  function fallbackFor(k){
+    try{
+      var c=document.createElement('canvas'); c.width=480; c.height=320;
+      var g=c.getContext('2d'), h=(k*47+20)%360;
+      var gr=g.createLinearGradient(0,0,480,320);
+      gr.addColorStop(0,'hsl('+h+',38%,34%)'); gr.addColorStop(1,'hsl('+((h+40)%360)+',40%,12%)');
+      g.fillStyle=gr; g.fillRect(0,0,480,320);
+      return c.toDataURL('image/jpeg',.8);
+    }catch(e){return PLACEHOLDER}
+  }
   function tick(){}
   var max=decodeMax();
   ITEMS.forEach(function(it,k){
     var cover=it.type==='video'?it.poster:(it.thumb||it.src);
-    var pr=cover?prep(cover,max):frameOf(it.src,max).then(function(u){return u||PLACEHOLDER});
+    var pr=cover?prep(cover,max):frameOf(it.src,max).then(function(u){return u||fallbackFor(k)});
     pr.then(function(u){
       it.cover=u;
       cards.forEach(function(c){if(c.item===k){c.img.src=u;c.img.classList.add('in')}});
@@ -611,7 +643,7 @@ persp=w<=640?Math.round(R*2.5):w<=900?920:1150;
     if(scrollY>maxScroll+1)scrollTo(0,maxScroll);
     p=Math.max(0,Math.min(1,scrollY/maxScroll));
     body.classList.toggle('deep',p>.5);
-    var target=0;
+    var target=0; /* зум на скролле отключён: шар не сплющивается */
     camZ+=(target-camZ)*.075;
     var sx=tilt+dragY, sy=spin+dragX;
     world.style.transform='translateZ('+camZ+'px) rotateY('+sy+'deg) rotateX('+sx+'deg)';
@@ -620,7 +652,7 @@ persp=w<=640?Math.round(R*2.5):w<=900?920:1150;
 
     var rx=sx*Math.PI/180, ry=sy*Math.PI/180;
     var cX=Math.cos(rx),sX=Math.sin(rx),cY=Math.cos(ry),sY=Math.sin(ry);
-    var shade=1, near=persp*.66, open=shotOpen();
+    var shade=1, near=persp*.66, open=shotOpen(); /* глубина не зависит от скролла */
     for(var i=0;i<N;i++){
       var c=cards[i],u=c.u;
       var vy=-u.y, vz=u.z, vx=u.x;
@@ -655,10 +687,10 @@ persp=w<=640?Math.round(R*2.5):w<=900?920:1150;
     var dx=e.clientX-sxp, dy=e.clientY-syp;
     moved=Math.max(moved,Math.hypot(dx,dy));
     if(ptype==='touch'&&!captured){
-  if(Math.hypot(dx,dy)<6)return;
-  try{stage.setPointerCapture(pid)}catch(err){}
-  captured=true;dragging=true;
-}
+      if(Math.hypot(dx,dy)<6)return;
+      try{stage.setPointerCapture(pid)}catch(err){}
+      captured=true;dragging=true;
+    }
     var mx=e.clientX-lxp, my=e.clientY-lyp;
     lxp=e.clientX; lyp=e.clientY;
     var k=.13;
