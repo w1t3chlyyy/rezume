@@ -448,10 +448,10 @@ body.menuopen #menu{clip-path:inset(0);pointer-events:auto}
   function layout(){
     var w=innerWidth,h=innerHeight;
     var b=w<=380?0:w<=640?1:2;
-    var hr=[.38,.42,.46][b], wr=[.48,.52,.58][b], fl=[108,120,155][b];
-    R=Math.max(fl,Math.min(480,h*hr,w*wr));
-    cw=Math.round(Math.max(72,R*[.44,.46,.47][b]));
-    persp=w<=380?620:w<=640?760:w<=900?920:1150;
+var hr=[.36,.38,.46][b], wr=[.44,.44,.58][b], fl=[100,110,155][b];
+R=Math.max(fl,Math.min(480,h*hr,w*wr));
+cw=Math.round(Math.max(72,R*[.5,.54,.47][b]));
+persp=w<=640?Math.round(R*2.7):w<=900?920:1150;
     stage.style.setProperty('--persp',persp+'px');
     doc.style.setProperty('--persp',persp+'px');
     doc.style.setProperty('--cw',cw+'px');
