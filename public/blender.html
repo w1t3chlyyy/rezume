@@ -49,15 +49,8 @@ a{-webkit-tap-highlight-color:transparent}
   html,body{overflow:hidden;height:100%}
   #stage{touch-action:none}
 }
-/* тело шара: даёт объём, даже если часть карточек тёмная */
-#ball{
-  position:absolute;left:50%;top:50%;border-radius:50%;pointer-events:none;
-  transform:translate(-50%,-50%);
-  background:radial-gradient(circle at 34% 28%,#44444b 0%,#1a1a1e 42%,#060607 78%);
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.14),
-             inset -22px -30px 70px rgba(0,0,0,.75),
-             0 0 60px rgba(255,255,255,.05);
-}
+/* тело шара скрыто */
+#ball{display:none}
 #world{position:absolute;top:50%;left:50%;width:0;height:0;transform-style:preserve-3d;will-change:transform}
 #orb{position:absolute;top:0;left:0;width:0;height:0;transform-style:preserve-3d;opacity:1;transform:none}
 #headline{
@@ -575,7 +568,7 @@ body.mob:not(.lit) .gridbtn{left:auto;right:calc(var(--pad) + var(--safe-right))
     stage.style.setProperty('--persp',persp+'px');
     doc.style.setProperty('--persp',persp+'px');
     doc.style.setProperty('--cw',cw+'px');
-    ballEl.style.width=ballEl.style.height=Math.round(R*1.9)+'px';
+    if(ballEl) ballEl.style.width=ballEl.style.height=Math.round(R*1.9)+'px';
     cards.forEach(function(c){
       var u=c.u;
       c.el.style.transform='translate3d('+(u.x*R)+'px,'+(-u.y*R)+'px,'+(u.z*R)+'px) rotateY('+u.lon+'deg) rotateX('+u.lat+'deg)';
